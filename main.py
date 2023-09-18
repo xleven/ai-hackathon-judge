@@ -62,7 +62,8 @@ with st.form("hackathon_info"):
     st.divider()
 
     st.subheader("Submit Apps")
-    apps = st.text_area("Repos", placeholder=DEFAULT_APPS)
+    # apps = st.text_area("Repos", placeholder=DEFAULT_APPS)
+    apps = st.text_input("Repo", placeholder="xleven/ai-hackathon-judge")
 
     submit_button = st.form_submit_button(label="Submit")
 
