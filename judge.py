@@ -2,41 +2,38 @@ import re
 from pathlib import Path
 
 from langchain.chat_models import ChatOpenAI
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 from langchain.document_loaders import GitLoader
 from langchain.agents import tool, AgentExecutor, ZeroShotAgent
 
 
-PREFIX = """You are a judge of {title}.
+SYSTEM_PROMPT = PromptTemplate.from_template("""You are the judge of {title}.
 Here are the introduction and judging criteria of the hackathon:
-<introduction>
-{intro}
-</introduction>
+Introduction: {intro}
+Judging: {judging}
 
-<judging>
-{judging}
-</judging>
+You have access to the following tools:
+{tool_strings}
 
-You have access to the following tools:"""
+Use the following format:
 
-FORMAT_INSTRUCTIONS = """Use the following format:
-
-Repo: the project repo you will judge
+Repos: the projects you will judge
 Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now have the final conclusion
-Final Answer: the final conclusion"""
+Final Answer: the final conclusion
 
-SUFFIX = """
 Projects will be submitted in the form of GitHub repositories, e.g. `user/repo`.
 Finish your judging with a score out of 100 and a detailed explanation attached.
 
 Begin!
 
 Repos: {input}
-Thought:{agent_scratchpad}"""
+Thought:{agent_scratchpad}""")
 
 
 def load_repo(repo: str, branch: str = "main") -> list:
@@ -78,14 +75,15 @@ def get_repo_info(repo: str) -> str:
     return info[:2000]
 
 
-def get_judge(hackathon_info: dict, model: str = "gpt-3.5-turbo", temperature: float = 0.1):
+def get_judge(hackathon_info: dict, model_config: dict = {}):
+    llm = ChatOpenAI(**model_config)
     tools = [get_repo_info, get_file_content]
-    agent = ZeroShotAgent.from_llm_and_tools(
-        tools=tools,
-        llm=ChatOpenAI(model=model, temperature=temperature),
-        prefix=PREFIX.format(**hackathon_info),
-        suffix=SUFFIX,
-        format_instructions=FORMAT_INSTRUCTIONS,
+    prompt = SYSTEM_PROMPT.partial(
+        tool_strings="\n".join([f"{tool.name}: {tool.description}" for tool in tools]),
+        tool_names=", ".join([tool.name for tool in tools]),
+        **hackathon_info,
     )
+    chain = LLMChain(llm=llm, prompt=prompt)
+    agent = ZeroShotAgent(llm_chain=chain, allowed_tools=[tool.name for tool in tools])
     judge = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
     return judge

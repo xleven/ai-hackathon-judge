@@ -40,6 +40,10 @@ ss = st.session_state
 
 with st.sidebar:
     ss.openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx")
+    ss.model = st.selectbox("Model", (
+        "gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k",
+    ))
+    ss.temperature = st.slider("Temperature", 0.0, 1.0, 0.1, 0.1, format="%.1f")
     ss.show_intermediate_steps = st.checkbox("Show intermediate steps")
 
 
@@ -66,10 +70,15 @@ with st.form("hackathon_info"):
 if submit_button:
     st.subheader("Judging Result")
     hackathon_info = {"title": title, "intro": intro, "judging": judging}
-    judge = get_judge(hackathon_info)
+    model_config = {
+        "openai_api_key": ss.openai_api_key,
+        "model": ss.model,
+        "temperature": ss.temperature,
+    }
+    judge = get_judge(hackathon_info, model_config)
     try:
         if ss.show_intermediate_steps:
-            handler = StreamlitCallbackHandler(st.container())
+            handler = StreamlitCallbackHandler(st.container(), max_thought_containers=10)
             result = judge.run(apps, callbacks=[handler])
         else:
             with st.status("Judging..."):
