@@ -39,7 +39,7 @@ st.title("🏅 AI Hackathon Judge 🏃🏻")
 ss = st.session_state
 
 with st.sidebar:
-    ss.openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx")
+    ss.openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx", type="password")
     ss.model = st.selectbox("Model", (
         "gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k",
     ))
