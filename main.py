@@ -75,8 +75,8 @@ if submit_button:
         "model": ss.model,
         "temperature": ss.temperature,
     }
-    judge = get_judge(hackathon_info, model_config)
     try:
+        judge = get_judge(hackathon_info, model_config)
         if ss.show_intermediate_steps:
             handler = StreamlitCallbackHandler(st.container(), max_thought_containers=10)
             result = judge.run(apps, callbacks=[handler])
