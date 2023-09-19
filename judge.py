@@ -18,7 +18,7 @@ You have access to the following tools:
 
 Use the following format:
 
-Repos: the projects you will judge
+Repo: the project you will judge
 Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
@@ -32,7 +32,7 @@ Finish your judging with a score out of 100 and a detailed explanation attached.
 
 Begin!
 
-Repos: {input}
+Repo: {input}
 Thought:{agent_scratchpad}""")
 
 

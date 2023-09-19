@@ -76,22 +76,28 @@ with st.form("hackathon_info"):
         help="Support GitHub repos. One repo each line in the form of `user/repo`"
     )
 
-    submit_button = st.form_submit_button(label="Submit")
+    submit_button = st.form_submit_button(label="Submit", disabled="model_config" not in ss)
 
 
 if submit_button:
     st.header("Judging Result")
     hackathon_info = {"title": title, "intro": intro, "judging": judging}
-    try:
-        judge = get_judge(hackathon_info, ss.model_config)
-        if ss.show_intermediate_steps:
-            handler = StreamlitCallbackHandler(st.container(), max_thought_containers=10)
-            result = judge.run(apps, callbacks=[handler])
+    repos = apps.splitlines()
+    for repo in repos:
+        st.subheader(repo)
+        if len(repo.split("/")) != 2:
+            st.error("Repo must be in the form of `user/repo`")
+            continue
+        try:
+            judge = get_judge(hackathon_info, ss.model_config)
+            if ss.show_intermediate_steps:
+                handler = StreamlitCallbackHandler(st.container(), max_thought_containers=10)
+                result = judge.run(repo, callbacks=[handler])
+            else:
+                with st.status("Judging..."):
+                    result = judge.run(apps)
+                    st.write("Judging finished.")
+        except Exception as err:
+            st.error(err)
         else:
-            with st.status("Judging..."):
-                result = judge.run(apps)
-                st.write("Judging finished.")
-    except Exception as err:
-        st.error(err)
-    else:
-        st.success(result, icon="✅")
+            st.success(result, icon="✅")
