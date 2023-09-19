@@ -95,7 +95,7 @@ if submit_button:
                 result = judge.run(repo, callbacks=[handler])
             else:
                 with st.status("Judging..."):
-                    result = judge.run(apps)
+                    result = judge.run(repo)
                     st.write("Judging finished.")
         except Exception as err:
             st.error(err)
