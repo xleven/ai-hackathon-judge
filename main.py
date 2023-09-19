@@ -47,11 +47,13 @@ with st.sidebar:
             "gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k",
         ))
         temperature = st.slider("Temperature", 0.0, 1.0, 0.1, 0.1, format="%.1f")
+        max_retries = st.slider("Max Retries", 0, 10, 2, 1)
         if st.form_submit_button("Save"):
             ss.model_config = {
                 "openai_api_key": openai_api_key,
                 "model": model,
                 "temperature": temperature,
+                "max_retries": max_retries,
             }
             ss.show_intermediate_steps = show_intermediate_steps
 
