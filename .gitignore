@@ -5,7 +5,6 @@
 .DS_Store
 *.ipynb
 secrets.toml
-repos
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
