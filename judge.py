@@ -1,39 +1,12 @@
 import re
 from pathlib import Path
 
+from langchain import hub
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.document_loaders import GitLoader
 from langchain.agents import tool, AgentExecutor, ZeroShotAgent
-
-
-SYSTEM_PROMPT = PromptTemplate.from_template("""You are the judge of {title}.
-Here are the introduction and judging criteria of the hackathon:
-Introduction: {intro}
-Judging: {judging}
-
-You have access to the following tools:
-{tool_strings}
-
-Use the following format:
-
-Repo: the project you will judge
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now have the final conclusion
-Final Answer: the final conclusion
-
-Projects will be submitted in the form of GitHub repositories, e.g. `user/repo`.
-Finish your judging with a score out of 100 and a detailed explanation attached.
-
-Begin!
-
-Repo: {input}
-Thought:{agent_scratchpad}""")
 
 
 def load_repo(repo: str, branch: str = "main") -> list:
@@ -78,7 +51,8 @@ def get_repo_info(repo: str) -> str:
 def get_judge(hackathon_info: dict, model_config: dict = {}, verbose: bool = False):
     llm = ChatOpenAI(**model_config)
     tools = [get_repo_info, get_file_content]
-    prompt = SYSTEM_PROMPT.partial(
+    system_prompt = hub.pull("xleven/ai-hackathon-judge")
+    prompt = system_prompt.partial(
         tool_strings="\n".join([f"{tool.name}: {tool.description}" for tool in tools]),
         tool_names=", ".join([tool.name for tool in tools]),
         **hackathon_info,
