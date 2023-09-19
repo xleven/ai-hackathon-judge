@@ -40,7 +40,7 @@ ss = st.session_state
 with st.sidebar:
     with st.form("config"):
         st.header("Configuration")
-        show_intermediate_steps = st.toggle("Show judge thoughts")
+        show_intermediate_steps = st.toggle("Show judge thoughts", True)
         st.divider()
         openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx", type="password")
         model = st.selectbox("Model", (
@@ -91,7 +91,7 @@ if submit_button:
             st.error("Repo must be in the form of `user/repo`")
             continue
         try:
-            judge = get_judge(hackathon_info, ss.model_config)
+            judge = get_judge(hackathon_info, ss.model_config, verbose=st.secrets.get("LANGCHAIN_VERBOSE")==True)
             if ss.show_intermediate_steps:
                 handler = StreamlitCallbackHandler(st.container(), max_thought_containers=10)
                 result = judge.run(repo, callbacks=[handler])

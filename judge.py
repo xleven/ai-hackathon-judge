@@ -75,7 +75,7 @@ def get_repo_info(repo: str) -> str:
     return info[:2000]
 
 
-def get_judge(hackathon_info: dict, model_config: dict = {}):
+def get_judge(hackathon_info: dict, model_config: dict = {}, verbose: bool = False):
     llm = ChatOpenAI(**model_config)
     tools = [get_repo_info, get_file_content]
     prompt = SYSTEM_PROMPT.partial(
@@ -85,5 +85,5 @@ def get_judge(hackathon_info: dict, model_config: dict = {}):
     )
     chain = LLMChain(llm=llm, prompt=prompt)
     agent = ZeroShotAgent(llm_chain=chain, allowed_tools=[tool.name for tool in tools])
-    judge = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+    judge = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=verbose)
     return judge
