@@ -26,8 +26,8 @@ Your app uses at least one partner: LangChain, LlamaIndex, Weaviate, AssemblyAI,
 6. LLM Pain Points
 You’ll get bonus points if your app addresses common LLM pain points like transparency, trust, accuracy, privacy, cost reduction, or ethics."""
 
-DEFAULT_APPS = """xleven/ai-hackathon-judge
-mmz-001/knowledge_gpt
+DEFAULT_APPS = """mmz-001/knowledge_gpt
+kinosal/tweet
 """
 
 
@@ -43,9 +43,11 @@ with st.sidebar:
         show_intermediate_steps = st.toggle("Show judge thoughts", True)
         st.divider()
         openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx", type="password")
-        model = st.selectbox("Model", (
-            "gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k",
-        ))
+        model = st.selectbox(
+            "Model", 
+            options=("gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k"),
+            index=1,
+        )
         temperature = st.slider("Temperature", 0.0, 1.0, 0.1, 0.1, format="%.1f")
         max_retries = st.slider("Max Retries", 0, 10, 2, 1)
         if st.form_submit_button("Save"):
