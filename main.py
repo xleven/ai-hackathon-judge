@@ -26,8 +26,7 @@ Your app uses at least one partner: LangChain, LlamaIndex, Weaviate, AssemblyAI,
 6. LLM Pain Points
 You’ll get bonus points if your app addresses common LLM pain points like transparency, trust, accuracy, privacy, cost reduction, or ethics."""
 
-DEFAULT_APPS = """# Support GitHub repos. One repo each line in the form of `user/repo`, e.g.
-xleven/ai-hackathon-judge
+DEFAULT_APPS = """xleven/ai-hackathon-judge
 mmz-001/knowledge_gpt
 """
 
@@ -39,12 +38,22 @@ st.title("🏅 AI Hackathon Judge 🏃🏻")
 ss = st.session_state
 
 with st.sidebar:
-    ss.openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx", type="password")
-    ss.model = st.selectbox("Model", (
-        "gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k",
-    ))
-    ss.temperature = st.slider("Temperature", 0.0, 1.0, 0.1, 0.1, format="%.1f")
-    ss.show_intermediate_steps = st.checkbox("Show intermediate steps")
+    with st.form("config"):
+        st.header("Configuration")
+        show_intermediate_steps = st.toggle("Show judge thoughts")
+        st.divider()
+        openai_api_key = st.text_input("Your OpenAI API key", placeholder="sk-xxxx", type="password")
+        model = st.selectbox("Model", (
+            "gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-16k",
+        ))
+        temperature = st.slider("Temperature", 0.0, 1.0, 0.1, 0.1, format="%.1f")
+        if st.form_submit_button("Save"):
+            ss.model_config = {
+                "openai_api_key": openai_api_key,
+                "model": model,
+                "temperature": temperature,
+            }
+            ss.show_intermediate_steps = show_intermediate_steps
 
 
 st.info("""
@@ -54,30 +63,27 @@ Built by [xleven](https://github.com/xleven) with [LangChain](https://github.com
 
 with st.form("hackathon_info"):
     
-    st.subheader("Hackathon Info")
+    st.header("Hackathon Info")
     title = st.text_input("Title", DEFAULT_TITLE)
-    intro = st.text_area("Intro", DEFAULT_INTRO)
-    judging = st.text_area("Judging Criteria", DEFAULT_JUDGING)
+    intro = st.text_area("Introduction", DEFAULT_INTRO, height=200)
+    judging = st.text_area("Judging Criteria", DEFAULT_JUDGING, height=200)
 
     st.divider()
 
-    st.subheader("Submit Apps")
-    # apps = st.text_area("Repos", placeholder=DEFAULT_APPS)
-    apps = st.text_input("Repo", placeholder="xleven/ai-hackathon-judge")
+    st.header("Submit Apps")
+    apps = st.text_area(
+        "Repos", DEFAULT_APPS,
+        help="Support GitHub repos. One repo each line in the form of `user/repo`"
+    )
 
     submit_button = st.form_submit_button(label="Submit")
 
 
 if submit_button:
-    st.subheader("Judging Result")
+    st.header("Judging Result")
     hackathon_info = {"title": title, "intro": intro, "judging": judging}
-    model_config = {
-        "openai_api_key": ss.openai_api_key,
-        "model": ss.model,
-        "temperature": ss.temperature,
-    }
     try:
-        judge = get_judge(hackathon_info, model_config)
+        judge = get_judge(hackathon_info, ss.model_config)
         if ss.show_intermediate_steps:
             handler = StreamlitCallbackHandler(st.container(), max_thought_containers=10)
             result = judge.run(apps, callbacks=[handler])
