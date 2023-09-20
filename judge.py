@@ -25,13 +25,8 @@ def load_repo(repo: str, branch: str = "main") -> list:
 def get_file_content(repo_file_path: str) -> str:
     """Get content of specific file in repo. Input be like `user/repo:file_path"""
     repo, file_path = repo_file_path.split(":")
-    files = load_repo(repo)
-    match = [
-        f.page_content
-        for f in files
-        if f.metadata["file_path"] == file_path
-    ]
-    return match[0][:2000] if match else "Not found"
+    file = Path("repos") / repo / file_path
+    return file.read_text()[:2000] if file.is_file() else "Not found"
 
 
 @tool
